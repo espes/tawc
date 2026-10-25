@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Runs inside registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie.
 # Mirrors the "fdroid build" job of fdroiddata's .gitlab-ci.yml as closely
 # as this rig can: same image, same fdroidserver (master tarball), same

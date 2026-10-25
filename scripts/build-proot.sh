@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile proot (and its libtalloc dependency) for Android via the
 # NDK and stage the resulting binaries at
 # `app/src/main/jniLibs/<abi>/libproot.so` so they ride along with
@@ -76,7 +76,7 @@ if [ -z "${ANDROID_NDK_HOME:-}" ] || [ ! -d "$ANDROID_NDK_HOME" ]; then
     echo "ERROR: ANDROID_NDK_HOME not set and no NDK found under \$ANDROID_HOME/ndk." >&2
     exit 1
 fi
-NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
 [ -x "$NDK_BIN/llvm-ar" ] || { echo "ERROR: NDK toolchain missing at $NDK_BIN" >&2; exit 1; }
 
 # ---------------------------------------------------------------------------

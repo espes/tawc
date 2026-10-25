@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fail if any native lib in an APK has an ELF LOAD segment aligned below
 # 16 KB. Such libs (and jniLib executables) won't load on 16 KB-page
 # devices, and Android 15+ shows an "App Compatibility" warning for them.
@@ -11,7 +11,7 @@ APK="${1:-$ROOT_DIR/app/build/outputs/apk/debug/app-debug.apk}"
 [ -f "$APK" ] || { echo "ERROR: no APK at $APK" >&2; exit 1; }
 
 ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
-READELF="$(command -v llvm-readelf || ls "$ANDROID_HOME"/ndk/*/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf 2>/dev/null | tail -1 || true)"
+READELF="$(command -v llvm-readelf || ls "$ANDROID_HOME"/ndk/*/toolchains/llvm/prebuilt/*/bin/llvm-readelf 2>/dev/null | tail -1 || true)"
 [ -x "$READELF" ] || { echo "ERROR: llvm-readelf not found" >&2; exit 1; }
 
 tmp="$(mktemp -d)"

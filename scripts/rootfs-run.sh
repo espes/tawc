@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run a command inside an installed rootfs through the dev exec broker.
 #
 # Usage: scripts/rootfs-run.sh [command]

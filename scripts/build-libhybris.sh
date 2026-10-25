@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile libhybris for aarch64 Linux (glibc) on the host.
 #
 # Replaces the old in-chroot autotools build (build-libhybris-chroot.sh)
@@ -40,6 +40,27 @@ done
 
 # ── Toolchain ──
 HOST_TRIPLE="aarch64-linux-gnu"
+# Nix's pkgsCross toolchain (shell.nix on Linux) uses the vendor triple.
+if ! command -v "${HOST_TRIPLE}-gcc" >/dev/null && command -v aarch64-unknown-linux-gnu-gcc >/dev/null; then
+    HOST_TRIPLE="aarch64-unknown-linux-gnu"
+fi
+# No cross gcc (macOS: glibc can't be built on a case-insensitive fs):
+# fall back to clang + lld wrappers named like the gcc toolchain, so the
+# rest of this script is unchanged. See scripts/lib/cross-clang.sh.
+if ! command -v "${HOST_TRIPLE}-gcc" >/dev/null || [ "${TAWC_LIBHYBRIS_CC:-}" = "clang" ]; then
+    # shellcheck source=lib/cross-clang.sh
+    source "$SCRIPT_DIR/lib/cross-clang.sh"
+    cross_clang_setup aarch64
+    HOST_TRIPLE="aarch64-linux-gnu"
+    # Wayland/Vulkan/X11 headers and protocol XML come from the sysroot too
+    # (nixpkgs has no darwin wayland).
+    : "${HOST_WAYLAND_INCLUDE:=$CROSS_CLANG_SYSROOT/usr/include}"
+    : "${HOST_WAYLAND_DATADIR:=$CROSS_CLANG_SYSROOT/usr/share/wayland}"
+    : "${HOST_WAYLAND_PROTOCOLS_DATADIR:=$CROSS_CLANG_SYSROOT/usr/share/wayland-protocols}"
+    : "${HOST_VULKAN_INCLUDE:=$CROSS_CLANG_SYSROOT/usr/include}"
+    : "${HOST_X11_INCLUDE:=$CROSS_CLANG_SYSROOT/usr/include}"
+    : "${HOST_XCB_INCLUDE:=$CROSS_CLANG_SYSROOT/usr/include}"
+fi
 CC_BIN="${HOST_TRIPLE}-gcc"
 CXX_BIN="${HOST_TRIPLE}-g++"
 command -v "$CC_BIN" >/dev/null || {
@@ -142,19 +163,19 @@ gen_stub libX11-xcb.so.1
 # and our stub .so directory for the link step. The host's wayland-
 # scanner and wayland-protocols XML are reused — they're build tools,
 # not target binaries.
-HOST_WAYLAND_INCLUDE="$(pkg-config --variable=includedir wayland-client 2>/dev/null || echo /usr/include)"
-HOST_WAYLAND_DATADIR="$(pkg-config --variable=pkgdatadir wayland-client 2>/dev/null || echo /usr/share/wayland)"
-HOST_WAYLAND_PROTOCOLS_DATADIR="$(pkg-config --variable=pkgdatadir wayland-protocols 2>/dev/null || echo /usr/share/wayland-protocols)"
+HOST_WAYLAND_INCLUDE="${HOST_WAYLAND_INCLUDE:-$(pkg-config --variable=includedir wayland-client 2>/dev/null || echo /usr/include)}"
+HOST_WAYLAND_DATADIR="${HOST_WAYLAND_DATADIR:-$(pkg-config --variable=pkgdatadir wayland-client 2>/dev/null || echo /usr/share/wayland)}"
+HOST_WAYLAND_PROTOCOLS_DATADIR="${HOST_WAYLAND_PROTOCOLS_DATADIR:-$(pkg-config --variable=pkgdatadir wayland-protocols 2>/dev/null || echo /usr/share/wayland-protocols)}"
 HOST_WAYLAND_SCANNER="$(command -v wayland-scanner)"
-HOST_VULKAN_INCLUDE="$(pkg-config --variable=includedir vulkan 2>/dev/null || echo /usr/include)"
+HOST_VULKAN_INCLUDE="${HOST_VULKAN_INCLUDE:-$(pkg-config --variable=includedir vulkan 2>/dev/null || echo /usr/include)}"
 [ -f "$HOST_VULKAN_INCLUDE/vulkan/vulkan.h" ] || {
     echo "ERROR: missing Vulkan headers at $HOST_VULKAN_INCLUDE/vulkan/vulkan.h" >&2
     echo "       Install vulkan-headers (Arch) or libvulkan-dev (Debian). See notes/building.md." >&2
     exit 1
 }
 # X11 / xcb headers — plain C, ABI-portable across glibc-aarch64 and host.
-HOST_X11_INCLUDE="$(pkg-config --variable=includedir x11 2>/dev/null || echo /usr/include)"
-HOST_XCB_INCLUDE="$(pkg-config --variable=includedir xcb 2>/dev/null || echo /usr/include)"
+HOST_X11_INCLUDE="${HOST_X11_INCLUDE:-$(pkg-config --variable=includedir x11 2>/dev/null || echo /usr/include)}"
+HOST_XCB_INCLUDE="${HOST_XCB_INCLUDE:-$(pkg-config --variable=includedir xcb 2>/dev/null || echo /usr/include)}"
 
 write_pc() {
     local name="$1" cflags="$2" libs="$3"

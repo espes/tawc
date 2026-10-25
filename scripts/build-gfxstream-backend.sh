@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile gfxstream's host renderer (libgfxstream_backend.so) for
 # Android via the NDK. Vulkan-only build — no GLES, no composer — to
 # keep the dep surface minimal for the bridge bring-up.
@@ -48,7 +48,7 @@ done
 ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
 NDK_DIR="$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | sort -V | tail -1)"
 [ -d "$NDK_DIR" ] || { echo "ERROR: no NDK at $ANDROID_HOME/ndk/*"; exit 1; }
-NDK_BIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin"
+NDK_BIN="$NDK_DIR/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
 # API 28 is the native floor for this backend; the app minSdk is higher
 # but this keeps the backend's direct NDK symbol requirements explicit.
 # Need ≥ 26 for AHardwareBuffer_*, ≥ 28 for vkGetMemoryAndroidHardwareBufferANDROID.
@@ -150,8 +150,10 @@ EOF
     local JNILIBS_DIR="$REPO_DIR/app/src/main/jniLibs/$jni_abi"
     mkdir -p "$JNILIBS_DIR"
     cp "$OUT_DIR/libgfxstream_backend.so" "$JNILIBS_DIR/libgfxstream_backend.so"
-    local LIBCPP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/${triple}/libc++_shared.so"
-    cp "$LIBCPP" "$JNILIBS_DIR/libc++_shared.so"
+    local LIBCPP="$NDK_DIR/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/sysroot/usr/lib/${triple}/libc++_shared.so"
+    # install -m: the NDK may be read-only (nix store); a plain cp keeps
+    # mode 444 and the next build cannot overwrite it.
+    install -m 644 "$LIBCPP" "$JNILIBS_DIR/libc++_shared.so"
 
     echo "==> [$abi] built libgfxstream_backend.so:"
     ls -la "$OUT_DIR/libgfxstream_backend.so"

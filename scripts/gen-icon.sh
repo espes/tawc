@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Regenerate every derived form of the TAWC app icon from its one source,
 # `app/icon.svg` (an Inkscape document — edit it there).
 #

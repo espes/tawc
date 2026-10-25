@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build the host-side exec helper if needed, then run it.
 #
 # Wrapper-only flag:

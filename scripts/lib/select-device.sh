@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Source from host scripts to pick which adb device to talk to.
 # Sets ANDROID_SERIAL (which adb honors natively).
 #

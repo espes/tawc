@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build the debug APK.
 #
 # Usage: scripts/build-app.sh [--abi=auto|arm64-v8a|x86_64|both] [--graphics=list|--no-gfxstream|--no-mesa] [--xwayland|--no-xwayland] [--quiet]

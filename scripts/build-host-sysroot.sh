@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build a target Linux rootfs/sysroot on the host, without adb or an
 # already-installed device rootfs. This is the canonical source for
 # glibc-side cross-build inputs used by production assets and test apps.
@@ -12,6 +12,9 @@
 #   scripts/build-host-sysroot.sh --abi=x86_64  [--distro=arch]
 #   scripts/build-host-sysroot.sh --abi=both    [--distro=arch]
 #   scripts/build-host-sysroot.sh --clean --abi=aarch64
+#
+# TAWC_SYSROOT_EXTRA_PACKAGES adds Arch packages on top of the profile
+# (build-libhybris.sh's clang mode adds `gcc` for libstdc++/crt files).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -175,7 +178,7 @@ build_arch_sysroot() {
     local sync="$work/sync"
     local db_extract="$work/db-extract"
     local packages
-    packages="$(arch_packages_for_profile)"
+    packages="$(arch_packages_for_profile) ${TAWC_SYSROOT_EXTRA_PACKAGES:-}"
 
     if [ "$CLEAN" = "1" ]; then
         rm -rf "$dst" "$work"
@@ -284,7 +287,10 @@ build_arch_sysroot() {
         | sort -z \
         | while IFS= read -r -d '' pkg; do
             bsdtar -xpf "$pkg" -C "$dst" --no-same-owner --no-xattrs \
-                --exclude='.BUILDINFO' --exclude='.MTREE' --exclude='.PKGINFO'
+                --exclude='.BUILDINFO' --exclude='.MTREE' --exclude='.PKGINFO' \
+                --exclude='usr/share/terminfo' --exclude='usr/share/man' \
+                --exclude='usr/share/doc' --exclude='usr/share/info' \
+                --exclude='usr/share/locale'
         done
     finalize_sysroot "$abi" "$dst"
 }

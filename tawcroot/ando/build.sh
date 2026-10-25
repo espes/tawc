@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile the ando guest client (static bionic) via the NDK and
 # stage it at `app/src/main/jniLibs/<abi>/libando.so`. Same jniLib-
 # extractor trick as tawcroot/proot: Android's extractor matches
@@ -36,7 +36,7 @@ find_ndk() {
         echo "ERROR: ANDROID_NDK_HOME not set and no NDK found under \$ANDROID_HOME/ndk." >&2
         exit 1
     fi
-    NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
     [ -x "$NDK_BIN/llvm-strip" ] || { echo "ERROR: NDK toolchain missing at $NDK_BIN" >&2; exit 1; }
 }
 

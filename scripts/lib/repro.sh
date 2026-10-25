@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Reproducible-build knobs, shared by the shell build scripts and by
 # app/build.gradle.kts. Release APKs are built inside F-Droid's image so
 # that paths and toolchain match theirs by construction; what this file

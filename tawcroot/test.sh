@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run the cleat-driven tawcroot test runner.
 #
 # A single binary at `build/tawcroot-host/tests` runs five layers of

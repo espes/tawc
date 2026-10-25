@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Verify the few files that have to name the app version agree with
 # `versionName` in app/build.gradle.kts, which is the single source.
 #

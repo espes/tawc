@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Dev-time caching reverse proxy for distro mirrors. See
 # notes/cache-proxy.md.
 #

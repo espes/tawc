@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Ensure one or more pinned git deps from deps/deps.list exist locally.
 #
 # This is non-mutating for existing checkouts: it clones missing deps and

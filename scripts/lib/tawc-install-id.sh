@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Resolve the in-app install id. Sets TAWC_INSTALL_ID.
 #
 # Uses the caller's TAWC_INSTALL_ID, or auto-selects when exactly one

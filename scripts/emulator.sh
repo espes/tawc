@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Manage the TAWC AVDs: start one (windowed, with post-boot setup) or stop it.
 # See notes/emulator.md for one-time setup (SDK, AVD, Magisk).
 #

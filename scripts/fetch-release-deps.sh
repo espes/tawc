@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fetch every pinned third-party source the release configuration builds
 # (scripts/build-release-apk.sh defaults: tawcMethods=tawcroot,
 # tawcGraphics=libhybris,cpu), without building anything.

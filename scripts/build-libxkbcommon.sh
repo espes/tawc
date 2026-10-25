@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile libxkbcommon for the Android NDK and stage the resulting
 # `libxkbcommon.a` where `compositor/build.rs` expects to link against it.
 # We do not patch xkbcommon — this is a pristine upstream build, only with
@@ -38,7 +38,7 @@ if [ -z "${ANDROID_NDK_HOME:-}" ] || [ ! -d "$ANDROID_NDK_HOME" ]; then
     echo "       Install one with sdkmanager 'ndk;<version>'." >&2
     exit 1
 fi
-NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
 [ -x "$NDK_BIN/llvm-ar" ] || { echo "ERROR: NDK toolchain missing at $NDK_BIN" >&2; exit 1; }
 
 ABI="aarch64"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile Mesa's chroot-side bits for aarch64 or x86_64 glibc:
 #   - libvulkan_gfxstream.so + libvirtgpu_kumquat_ffi.a + ICD JSON
 #     (gfxstream-bridge backend's chroot-side guest Vulkan driver)
@@ -173,6 +173,18 @@ build_one() {
             ;;
         *) echo "ERROR: bad abi: $abi" >&2; return 1 ;;
     esac
+    # No glibc cross gcc (macOS, where even x86_64 isn't a native glibc
+    # build): clang + lld wrappers, see scripts/lib/cross-clang.sh.
+    if ! command -v "$CC_BIN" >/dev/null || { [ "$abi" = "x86_64" ] && [ "$(uname -s)" != "Linux" ]; }; then
+        # shellcheck source=lib/cross-clang.sh
+        source "$SCRIPT_DIR/lib/cross-clang.sh"
+        cross_clang_setup "$abi" || return 1
+        HOST_TRIPLE="$abi-linux-gnu"
+        CC_BIN="$HOST_TRIPLE-gcc"
+        CXX_BIN="$HOST_TRIPLE-g++"
+        AR_BIN="$HOST_TRIPLE-ar"
+        STRIP_BIN="$HOST_TRIPLE-strip"
+    fi
     command -v "$CC_BIN" >/dev/null || {
         echo "ERROR: $CC_BIN not on PATH (install $abi cross-toolchain — see notes/building.md)" >&2
         return 1
@@ -372,7 +384,7 @@ EOF
             rm -rf "$BUILD_DIR_GFXSTREAM"
         fi
         if [ ! -f "$BUILD_DIR_GFXSTREAM/build.ninja" ]; then
-            PKG_CONFIG_LIBDIR="$PC_DIR" PKG_CONFIG_PATH_FOR_BUILD="$PC_DIR" meson setup "$BUILD_DIR_GFXSTREAM" "$MESA_DIR" \
+            PKG_CONFIG_LIBDIR="$PC_DIR" PKG_CONFIG_PATH="" PKG_CONFIG_PATH_FOR_BUILD="$PC_DIR" meson setup "$BUILD_DIR_GFXSTREAM" "$MESA_DIR" \
                 --cross-file "$OUT_DIR/cross.txt" \
                 -Dvulkan-drivers=gfxstream \
                 -Dgallium-drivers= \
@@ -453,7 +465,7 @@ EOF
         rm -rf "$BUILD_DIR_ZINK"
     fi
     if [ ! -f "$BUILD_DIR_ZINK/build.ninja" ]; then
-        PKG_CONFIG_LIBDIR="$PC_DIR" PKG_CONFIG_PATH_FOR_BUILD="$PC_DIR" meson setup "$BUILD_DIR_ZINK" "$MESA_DIR" \
+        PKG_CONFIG_LIBDIR="$PC_DIR" PKG_CONFIG_PATH="" PKG_CONFIG_PATH_FOR_BUILD="$PC_DIR" meson setup "$BUILD_DIR_ZINK" "$MESA_DIR" \
             --cross-file "$OUT_DIR/cross.txt" \
             -Dvulkan-drivers= \
             -Dgallium-drivers=zink \

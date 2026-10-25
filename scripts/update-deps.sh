@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Bring every vendored dep listed in deps/deps.list into sync with the
 # pinned commit. Use this after pulling a manifest update, or after a
 # build errors with "dep <name> is at the wrong commit".

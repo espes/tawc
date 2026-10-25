@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Remove the whole rig state, including files the container chowned to a
 # subuid. The next prepare.sh re-clones and re-downloads everything (GBs).
 set -euo pipefail

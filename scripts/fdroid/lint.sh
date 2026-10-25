@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Lint the recipe exactly as it sits in the repo (GitHub Repo, tag commit),
 # not the rewritten local-mirror copy the build modes use.
 set -euo pipefail

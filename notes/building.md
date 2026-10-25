@@ -6,9 +6,9 @@
 > repo, env var, toolchain version — update this doc in the same change.
 > AGENTS.md instructs agents to consult and update this file when building.
 
-This doc describes building on a Linux x86_64 host. macOS/Windows are not
-supported as build hosts; nothing is fundamentally portable-hostile, just
-untested.
+This doc describes building on a Linux x86_64 host. macOS (arm64) builds
+through the nix shell — see "Nix shell (Linux and macOS)" below.
+Windows is not supported.
 
 ## Quick reference
 
@@ -97,6 +97,52 @@ F-Droid recipe — see "F-Droid buildserver rig" below. Skip for ordinary
 dev builds. Release signing also needs build-tools 35 or newer, for
 `apksigner --alignment-preserved`.
 
+### Nix shell (Linux and macOS)
+
+`shell.nix` provides everything above: JDK 21, an Android SDK (platform 36,
+build-tools 35/36, NDK 27.2.12479018), rustup (reads `rust-toolchain.toml`),
+cargo-ndk 4.1.2, bindgen, meson/ninja/autotools, Mesa's Python modules and
+the GNU userland the scripts assume. It pins nixpkgs by commit and hash
+(bump steps at the top of the file); no flakes needed.
+
+```bash
+nix-shell
+scripts/build-app.sh
+```
+
+The shell unsets the toolchain variables (`CC`, `AR`, `LD`, …) that nix's
+host clang exports: the build scripts assign `CC=<NDK clang>` without
+`export`, which would otherwise become an export and leak into native
+sub-builds. It sets `CC_FOR_BUILD=cc` for autotools build-machine tools.
+
+On Linux the shell also carries nixpkgs' aarch64 glibc cross gcc and host
+wayland/vulkan/X11 headers. macOS differences:
+
+- **glibc cross gcc:** nix can't build glibc on macOS (case-insensitive
+  filesystem; `stamp.os` vs `stamp.oS`), so libhybris and Mesa fall back to
+  `scripts/lib/cross-clang.sh`: `<triple>-gcc` wrappers around an unwrapped
+  clang (`TAWC_CROSS_CLANG`, set by the shell) + lld + llvm binutils, against
+  the Arch sysroot from `build-host-sysroot.sh` with `gcc`, `vulkan-headers`
+  and X11/xcb headers added. libhybris takes its wayland/vulkan/X11 headers
+  from that sysroot too (nixpkgs has no darwin wayland). Release APKs still
+  come from F-Droid's gcc build; this is for dev builds.
+- **`gcc` is an Xcode stub** at `/usr/bin/gcc`; the shell aliases `gcc`/`g++`
+  to nix's clang for native autotools stages (font-util, libX11 makekeys).
+- **Case-sensitive volume for Xwayland/Mesa:** bionic's `<string.h>`
+  includes `<xlocale.h>`, which resolves to libX11's own `X11/Xlocale.h` on
+  a case-insensitive filesystem. The lean build
+  (`scripts/build-app.sh --no-xwayland --graphics=libhybris,cpu`) works from a
+  normal APFS checkout; the default build needs the checkout on a
+  case-sensitive volume, e.g.:
+
+  ```bash
+  diskutil apfs addVolume disk3 "Case-sensitive APFS" tawc   # or:
+  hdiutil create -size 100g -type SPARSE -fs "Case-sensitive APFS" -volname tawc ~/tawc.sparseimage
+  hdiutil attach ~/tawc.sparseimage   # mounts at /Volumes/tawc
+  ```
+- No Xcode or Command Line Tools are needed (and `/usr/bin/git` is a stub
+  without them) — use git from the shell.
+
 ### aarch64 glibc cross-toolchain (libhybris)
 
 | Distro | Packages |
@@ -180,6 +226,15 @@ above when they are unset. `ANDROID_NDK_HOME` is auto-detected by
 `scripts/build-libxkbcommon.sh`
 (it falls back to `$ANDROID_HOME/ndk/<latest>`). Direct `./gradlew` invocations
 use the repo's Gradle daemon JVM pin and require JDK 21 to be installed.
+
+Cross-toolchain knobs (see "Nix shell" above):
+
+- `TAWC_CROSS_CLANG` — clang for the `scripts/lib/cross-clang.sh` fallback
+  (must be unwrapped; default `clang` from PATH).
+- `TAWC_LIBHYBRIS_CC=clang` — force that fallback for libhybris even when a
+  cross gcc is installed.
+- `TAWC_SYSROOT_EXTRA_PACKAGES` — extra Arch packages for
+  `build-host-sysroot.sh`.
 
 `SOURCE_DATE_EPOCH` is exported onto every Gradle `Exec` task (so every
 native build script and cargo run inherits it) for reproducible release
@@ -341,7 +396,11 @@ Output: `deps/libxkbcommon/builddir{,-x86_64}/libxkbcommon.a`. Linked into
 
 ### libhybris (shared .so set → ships in APK as asset)
 
-Cross-built once. aarch64-linux-gnu-gcc against glibc.
+Cross-built once. aarch64-linux-gnu-gcc against glibc (also accepts
+nixpkgs' `aarch64-unknown-linux-gnu-` prefix). Without a cross gcc it uses
+the clang fallback from "Nix shell" above; under clang, q/linker.cpp's
+`TRACE()` calls that pass a `std::vector` through varargs compile to a trap
+(gcc passes garbage instead), so only linker debug verbosity is affected.
 
 ```bash
 scripts/build-libhybris.sh           # incremental
@@ -421,7 +480,9 @@ The build script invokes `make` per-subdir to control this.
 
 Cross-built once per enabled ABI. `aarch64` uses the same
 `aarch64-linux-gnu` toolchain as libhybris; `x86_64` uses the host
-glibc compiler. Builds with `-Dvirtgpu_kumquat=true` enabled — Mesa
+glibc compiler (on macOS both use the clang fallback, see "Nix shell").
+`meson setup` runs with `PKG_CONFIG_PATH=""` so host libraries (e.g. a nix
+shell's zlib) can't satisfy target dependencies. Builds with `-Dvirtgpu_kumquat=true` enabled — Mesa
 patches in `deps/mesa-patches/mesa/` add a meson option that
 sidesteps the in-tree Rust subproject build (which doesn't
 cross-compile cleanly) by linking to a separately-cargo-built

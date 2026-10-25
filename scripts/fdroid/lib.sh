@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Shared config for the F-Droid buildserver rig. Sourced by the other
 # scripts in this dir; not useful on its own.
 #

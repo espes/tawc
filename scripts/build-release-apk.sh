@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build a signed release APK (zipaligned, v2/v3 signed).
 #
 # Keystore: $KEYSTORE_PATH (default: $HOME/Android/keystore.jks)

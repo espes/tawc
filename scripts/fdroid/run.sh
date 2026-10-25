@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run the staged build in the buildserver container. Long: hours.
 #
 #   run.sh [--cpuset-cpus <spec>] [--fresh-cache]

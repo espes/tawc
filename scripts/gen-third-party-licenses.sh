@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Regenerate app/src/main/assets/licenses.json — the data behind the
 # in-app Settings > About > Licenses screen.
 #

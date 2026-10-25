@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build, install, and optionally launch the debug APK.
 #
 # Usage: scripts/app-build-install.sh [--no-build] [--no-launch] [--force-install] [--graphics=list|--no-gfxstream|--no-mesa] [--xwayland|--no-xwayland]

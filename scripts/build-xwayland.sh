@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile Xwayland for Android (bionic) and stage it for
 # packaging into the APK. Loosely modelled on `scripts/build-libhybris.sh`
 # but targets the Android NDK toolchain instead of the host glibc cross-
@@ -117,8 +117,8 @@ if [ -z "${ANDROID_NDK_HOME:-}" ] || [ ! -d "$ANDROID_NDK_HOME" ]; then
     echo "ERROR: ANDROID_NDK_HOME not set and no NDK found under \$ANDROID_HOME/ndk." >&2
     exit 1
 fi
-NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
-NDK_SYSROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
+NDK_SYSROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/sysroot"
 NDK_API=29
 case "$ABI" in
     aarch64)

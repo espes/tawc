@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-compile OpenSSH's sftp-server (static bionic) via the NDK and
 # stage it at `app/src/main/jniLibs/<abi>/libsftp-server.so` (same
 # jniLib-extractor trick as ando). SftpServerInstallProvider copies it
@@ -29,7 +29,7 @@ find_ndk() {
         fi
     fi
     [ -n "${ANDROID_NDK_HOME:-}" ] || { echo "ERROR: ANDROID_NDK_HOME not set and no NDK found" >&2; exit 1; }
-    NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    NDK_BIN="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$(uname -s | tr "[:upper:]" "[:lower:]")-x86_64/bin"
     [ -x "$NDK_BIN/llvm-strip" ] || { echo "ERROR: NDK toolchain missing at $NDK_BIN" >&2; exit 1; }
 }
 

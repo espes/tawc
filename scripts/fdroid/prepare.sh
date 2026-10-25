@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Stage build/fdroid/ for one rig run: refresh the mirror of this repo and
 # install the recipe under test into the fdroiddata checkout, rewritten to
 # build the chosen commit from that mirror.

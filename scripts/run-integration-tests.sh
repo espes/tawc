@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run the integration tests against the selected adb target.
 #
 # Usage: scripts/run-integration-tests.sh [--no-build] [filter]

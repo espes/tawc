@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Source from host scripts to get the on-device test/debug scratch dir.
 # Sets TAWC_SCRATCH to the single canonical path and ensures it exists.
 #
