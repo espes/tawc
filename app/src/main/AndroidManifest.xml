@@ -8,6 +8,9 @@
          apart so it never listens on one (remote/LocalNetwork.kt). -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Lets guest tools run via ando request networks, e.g. another SIM's
+         mobile data (github.com/espes/mirv). Normal permission, no prompt. -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <!-- SessionService keeps the process in the foreground while anything
          is alive in a rootfs (terminals, commands, the compositor);
          specialUse is the correct foregroundServiceType on Android 14+

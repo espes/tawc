@@ -321,6 +321,12 @@ separate and debug-only. The socket node sits in app-private data
 (`/data/data/me.phie.tawc/distros/<id>/ando/`), unreachable to other
 apps even before peercred.
 
+Children hold the app's permissions, so the manifest is also what ando
+programs can do. `CHANGE_NETWORK_STATE` is declared for them alone:
+nothing in the app requests networks, but guest tools such as
+[mirv](https://github.com/espes/mirv)'s `multicarrier` (another SIM's
+mobile data via `ConnectivityManager.requestNetwork`) need it.
+
 ### Per-distro gating (what the toggle actually protects)
 
 The per-distro toggle closes every **supported** access path for a
